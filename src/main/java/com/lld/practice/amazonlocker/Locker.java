@@ -2,13 +2,19 @@ package com.lld.practice.amazonlocker;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class Locker {
-  private List<Compartment> compartments;
-  private Map<String, AccessToken> accessTokenMappings;
+  private final List<Compartment> compartments;
+  private final Map<String, AccessToken> accessTokenMappings;
+
+  public Locker(List<Compartment> compartments) {
+    this.compartments = compartments;
+    this.accessTokenMappings = new HashMap<>();
+  }
 
   public String depositPackage(Size size) {
     Compartment compartment = getAvailableCompartment(size);
@@ -40,6 +46,16 @@ public class Locker {
     compartment.open();
     compartment.markFree();
     accessTokenMappings.remove(accessToken.getCode());
+  }
+
+  public void openExpiredCompartments() {
+
+    for (AccessToken accessToken : accessTokenMappings.values()) {
+      if (accessToken.isExpired()) {
+        Compartment compartment = accessToken.getCompartment();
+        compartment.open();
+      }
+    }
   }
 
   private Compartment getAvailableCompartment(Size packageSize) {

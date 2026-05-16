@@ -26,7 +26,15 @@ public abstract class FileSystemEntry {
   }
 
   public String getPath() {
-    return null;
+    if (parent == null) {
+      return this.getName();
+    }
+
+    String path = parent.getPath();
+    if ("/".equals(path)) {
+      return "/" + this.getName();
+    }
+    return path + "/" + this.getName();
   }
 
   public abstract boolean isDirectory();

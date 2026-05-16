@@ -89,7 +89,7 @@ public class ElevatorController {
   }
 
   private Elevator findNearestIdleElevator(Request request) {
-    Elevator elevator = elevators.getFirst();
+    Elevator elevator = elevators.get(0);
     int minDistance = Math.abs(elevator.getCurrentFloor() - request.getFloorNo());
 
     for (int i = 1; i < elevators.size(); i++) {
@@ -106,7 +106,7 @@ public class ElevatorController {
 
   private Elevator findNearestElevator(Request request) {
 
-    Elevator elevator = elevators.getFirst();
+    Elevator elevator = elevators.get(0);
     int minDistance = Math.abs(elevator.getCurrentFloor() - request.getFloorNo());
 
     for (int i = 1; i < elevators.size(); i++) {

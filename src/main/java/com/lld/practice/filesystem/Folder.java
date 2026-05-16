@@ -1,13 +1,10 @@
 package com.lld.practice.filesystem;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Folder extends FileSystemEntry {
 
-  private Map<String, FileSystemEntry> children;
+  private final Map<String, FileSystemEntry> children;
 
   public Folder(String name) {
     super(name);
@@ -15,23 +12,37 @@ public class Folder extends FileSystemEntry {
   }
 
   public boolean addChild(FileSystemEntry entry) {
-    return false;
+    String name = entry.getName();
+    if (children.containsKey(name)) {
+      return false;
+    }
+    children.put(name, entry);
+    entry.setParent(this);
+    return true;
   }
 
   public FileSystemEntry removeChild(String name) {
-    return null;
+    FileSystemEntry entry = children.remove(name);
+    if (entry != null) {
+      entry.setParent(null);
+    }
+    return entry;
   }
 
   public boolean hasChild(String name) {
-    return false;
+    return children.containsKey(name);
   }
 
   public List<FileSystemEntry> getChildren() {
-    return Collections.emptyList();
+    return new ArrayList<>(children.values());
   }
 
   @Override
   public boolean isDirectory() {
     return true;
+  }
+
+  public FileSystemEntry getChild(String srcName) {
+    return children.get(srcName);
   }
 }

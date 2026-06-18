@@ -50,7 +50,10 @@ public class BookingSystem {
   }
 
   public List<ShowTime> searchMoviesByTheater(Theater theater) {
-    return null;
+    LocalDateTime now = LocalDateTime.now();
+    return theater.getShowTimes().stream()
+        .filter(showTime -> !showTime.getShowTime().isBefore(now))
+        .toList();
   }
 
   public void book(ShowTime showTime, List<String> seatIds) {}

@@ -1,22 +1,41 @@
 package com.lld.practice.moviebooking;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BookingSystem {
-    private List<Theater> theaters;
+  private List<Theater> theaters;
 
-    public List<ShowTime> searchMovies(String title) {
-        return null;
+  public BookingSystem() {
+    theaters = new ArrayList<>();
+  }
+
+  public List<ShowTime> searchMovies(String title) {
+
+    if (title == null || title.isBlank()) {
+      throw new IllegalArgumentException("Valid title is expected");
     }
 
-    public List<ShowTime> searchMoviesByTheater(Theater theater) {
-        return null;
+    List<ShowTime> result = new ArrayList<>();
+    LocalDateTime now = LocalDateTime.now();
+
+    for (Theater theater : theaters) {
+      for (ShowTime showTime : theater.getShowTimes()) {
+        if (title.equals(showTime.getMovie().getTitle()) && showTime.getShowTime().isAfter(now)) {
+          result.add(showTime);
+        }
+      }
     }
 
-    public void book(ShowTime showTime, List<String> seatIds) {
-    }
+    return result;
+  }
 
-    public void cancel(String confirmationId) {
+  public List<ShowTime> searchMoviesByTheater(Theater theater) {
+    return null;
+  }
 
-    }
+  public void book(ShowTime showTime, List<String> seatIds) {}
+
+  public void cancel(String confirmationId) {}
 }

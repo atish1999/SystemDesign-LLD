@@ -31,15 +31,52 @@ public class ShowTime {
     return movie;
   }
 
-  public void book(Reservation reservation) {}
+  public void book(Reservation reservation) {
 
-  public void cancel(Reservation reservation) {}
+    // check availability
+    for (String seatId : reservation.getSeatIds()) {
+      if (!isSeatAvailable(seatId)) {
+        throw new RuntimeException("Seat is not available for booking");
+      }
+    }
+    // book those seats
+    reservations.add(reservation);
+  }
+
+  public void cancel(Reservation reservation) {
+    reservations.remove(reservation);
+  }
 
   public List<String> getAvailableSeats() {
     return null;
   }
 
   public boolean isSeatAvailable(String seatId) {
-    return false;
+
+    if (!isValidSeatId(seatId)) {
+      throw new IllegalArgumentException("Invalid seatId=%s provided ".formatted(seatId));
+    }
+
+    boolean isAvailable = true;
+    for (Reservation reservation : reservations) {
+      if (reservation.getSeatIds().contains(seatId)) {
+        isAvailable = false;
+        break;
+      }
+    }
+
+    return isAvailable;
+  }
+
+  private boolean isValidSeatId(String seatId) {
+
+    if (seatId == null || seatId.length() < 2) {
+      return false;
+    }
+
+    String firstSeatId = "A1";
+    String lastSeatId = "Z26";
+
+    return firstSeatId.compareTo(seatId) <= 0 && lastSeatId.compareTo(seatId) >= 0;
   }
 }

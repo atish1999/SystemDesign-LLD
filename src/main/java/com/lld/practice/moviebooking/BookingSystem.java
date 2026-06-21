@@ -9,6 +9,8 @@ public class BookingSystem {
   private List<Theater> theaters;
   private Map<String, Movie> moviesById;
   private Map<String, List<ShowTime>> showTimesByMovieId;
+  private Map<String, ShowTime> showTimesById;
+  private Map<String, Reservation> reservationByConfirmationId;
 
   public BookingSystem() {
     theaters = new ArrayList<>();
@@ -19,6 +21,7 @@ public class BookingSystem {
         showTimesByMovieId
             .computeIfAbsent(showTime.getMovie().getId(), k -> new ArrayList<>())
             .add(showTime);
+        showTimesById.put(showTime.getId(), showTime);
       }
     }
   }
@@ -56,7 +59,37 @@ public class BookingSystem {
         .toList();
   }
 
-  public void book(ShowTime showTime, List<String> seatIds) {}
+  public Reservation book(ShowTime showTime, List<String> seatIds) {
 
-  public void cancel(String confirmationId) {}
+    // validation
+    if (showTime == null || !showTimesById.containsKey(showTime.getId())) {
+      throw new IllegalArgumentException("Invalid ShowTime provided");
+    }
+
+    if (seatIds == null || seatIds.isEmpty()) {
+      throw new IllegalArgumentException("Invalid seatIds provided");
+    }
+
+    // book;
+    Reservation reservation = new Reservation(showTime, seatIds);
+    showTime.book(reservation);
+    reservationByConfirmationId.put(reservation.getConfirmationId(), reservation);
+    return reservation;
+  }
+
+  public void cancel(String confirmationId) {
+    // validation
+    if (confirmationId == null || confirmationId.isEmpty()) {
+      throw new IllegalArgumentException("Invalid confirmationId provided");
+    }
+
+    if (!reservationByConfirmationId.containsKey(confirmationId)) {
+      throw new IllegalStateException("Confirmation Id not found");
+    }
+
+    // cancel
+    Reservation reservation = reservationByConfirmationId.get(confirmationId);
+    ShowTime showTime = reservation.getShowTime();
+    showTime.cancel(reservation);
+  }
 }

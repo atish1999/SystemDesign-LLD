@@ -33,18 +33,22 @@ public class ShowTime {
 
   public void book(Reservation reservation) {
 
-    // check availability
-    for (String seatId : reservation.getSeatIds()) {
-      if (!isSeatAvailable(seatId)) {
-        throw new RuntimeException("Seat is not available for booking");
+    synchronized (this) {
+      // check availability
+      for (String seatId : reservation.getSeatIds()) {
+        if (!isSeatAvailable(seatId)) {
+          throw new RuntimeException("Seat is not available for booking");
+        }
       }
+      // book those seats
+      reservations.add(reservation);
     }
-    // book those seats
-    reservations.add(reservation);
   }
 
   public void cancel(Reservation reservation) {
-    reservations.remove(reservation);
+    synchronized (this) {
+      reservations.remove(reservation);
+    }
   }
 
   public List<String> getAvailableSeats() {

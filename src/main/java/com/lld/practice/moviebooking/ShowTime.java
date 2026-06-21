@@ -78,9 +78,9 @@ public class ShowTime {
       return false;
     }
 
-    String firstSeatId = "A1";
-    String lastSeatId = "Z26";
+    char row = seatId.charAt(0);
+    int column = Integer.parseInt(seatId.substring(1));
 
-    return firstSeatId.compareTo(seatId) <= 0 && lastSeatId.compareTo(seatId) >= 0;
+    return row >= 'A' && row <= 'Z' && column >= 0 && column <= 26;
   }
 }

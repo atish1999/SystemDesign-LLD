@@ -30,6 +30,10 @@ public class Seat {
     this.isAvailable = false;
   }
 
+  public void cancel() {
+    this.isAvailable = true;
+  }
+
   public boolean isAvailable() {
     return isAvailable;
   }

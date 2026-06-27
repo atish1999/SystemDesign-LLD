@@ -45,6 +45,7 @@ public class ShowTime {
     return movie;
   }
 
+  // fine grained locking
   public void book(Reservation reservation) {
 
     List<String> acquired = new ArrayList<>();
@@ -76,7 +77,33 @@ public class ShowTime {
     }
   }
 
-  public void cancel(Reservation reservation) {}
+  public void cancel(Reservation reservation) {
+    List<String> acquired = new ArrayList<>();
+    List<String> booked = new ArrayList<>(reservation.getSeatIds());
+    Collections.sort(booked);
+
+    try {
+
+      for (String seatId : booked) {
+        Seat seat = seatMaps.get(seatId);
+        if (seat == null) {
+          // throw exception
+        }
+        seat.acquire();
+        acquired.add(seatId);
+      }
+
+      for (String seatId : booked) {
+        Seat seat = seatMaps.get(seatId);
+        seat.cancel();
+      }
+
+      reservations.remove(reservation);
+
+    } finally {
+      acquired.stream().map(seatMaps::get).forEach(Seat::release);
+    }
+  }
 
   public List<String> getAvailableSeats() {
     return null;

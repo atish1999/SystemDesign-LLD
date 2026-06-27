@@ -25,4 +25,17 @@ public class Reservation {
   public List<String> getSeatIds() {
     return seatIds;
   }
+
+  @Override
+  public boolean equals(Object other) {
+
+    if (this == other) return true;
+    if (!(other instanceof Reservation)) return false;
+    return this.getConfirmationId().equals(((Reservation) other).getConfirmationId());
+  }
+
+  @Override
+  public int hashCode() {
+    return confirmationId.hashCode();
+  }
 }

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ShowTime {
   private String id;
@@ -16,6 +17,7 @@ public class ShowTime {
   private ConcurrentHashMap<String, Seat> seatMaps;
 
   public ShowTime() {
+    this.reservations = new CopyOnWriteArrayList<>();
     this.seatMaps = new ConcurrentHashMap<>();
     for (char row = 'A'; row <= 'Z'; ++row) {
       for (int col = 1; col <= 20; ++col) {

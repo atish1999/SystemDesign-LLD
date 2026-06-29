@@ -14,15 +14,29 @@ public class ShowTime {
   private Movie movie;
   private LocalDateTime showTime;
 
-  // CopyOnWriteArrayList: per-seat locks only protect seat state — not this list.
-  // Two threads booking different seats hold different locks, so both can reach
-  // reservations.add() simultaneously with no mutual exclusion. That's a data race
-  // on a plain ArrayList. COWL makes writes safe: every write copies the array internally.
-  // IMPROVEMENT: Replace with ConcurrentHashMap<String, Reservation> keyed by confirmationId.
-  //   - O(1) add/remove/contains vs O(n) for CopyOnWriteArrayList
-  //   - Eliminates the equals()/hashCode() dependency on Reservation for remove()
-  //   - cancel() becomes reservations.remove(confirmationId) — atomic, no TOCTOU risk
-  //   - ConcurrentHashMap.remove() is the natural atomic gate for double-free prevention
+  // Why List is the wrong structure for reservations:
+  //   - add/remove/contains are O(n) — grows linearly with every booking
+  //   - remove() depends on Reservation.equals() — silent no-op if not overridden correctly
+  //   - contains() + remove() in cancel are two separate operations, not atomic together:
+  //     two concurrent cancels both pass contains(), both call remove() and free seats — double-free
+  //
+  // CopyOnWriteArrayList is used here because per-seat locks don't protect this list:
+  // two threads booking different seats hold different locks and can both reach
+  // reservations.add() simultaneously — plain ArrayList would corrupt under concurrent writes.
+  // COWL makes individual writes safe but doesn't solve the O(n) or TOCTOU problems.
+  //
+  // Why not CopyOnWriteArraySet<Reservation> (HashSet-backed alternative)?
+  //   - O(1) contains/add/remove via hashCode — faster than List
+  //   - Still relies on Reservation.equals()/hashCode() for identity — same dependency risk
+  //   - Still has the contains() + remove() TOCTOU gap (two operations, not one atomic step)
+  //   - CopyOnWriteArraySet copies the array on every write — same overhead as COWL
+  //
+  // IMPROVEMENT — use ConcurrentHashMap<String, Reservation> keyed by confirmationId:
+  //   - O(1) put/remove/get — no scan, constant time regardless of booking volume
+  //   - remove(confirmationId) is a single atomic operation — the double-free race disappears
+  //     because only one thread gets a non-null return; the other sees null and throws
+  //   - No equals()/hashCode() dependency on Reservation — the key is a plain String
+  //   - cancel() becomes: Reservation r = reservations.remove(id); if (r == null) throw ...
   private List<Reservation> reservations;
 
   // ConcurrentHashMap: even though seatMaps is only structurally modified during construction,

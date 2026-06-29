@@ -14,14 +14,28 @@ public class ShowTime {
   private Movie movie;
   private LocalDateTime showTime;
 
-  // CopyOnWriteArrayList: per-seat CAS operations are atomic, but they don't protect this list.
-  // Two threads booking completely different seats both reach reservations.add() simultaneously
-  // with no mutual exclusion — that's a data race on a plain ArrayList.
-  // COWL makes writes safe: every write copies the entire array; reads are lock-free.
-  // IMPROVEMENT: Replace with ConcurrentHashMap<String, Reservation> keyed by confirmationId.
-  //   - O(1) add/remove/contains vs O(n) for List
-  //   - remove() becomes reservations.remove(confirmationId) — no equals()/hashCode() dependency
-  //   - Naturally atomic: ConcurrentHashMap.remove() is the atomic gate, eliminates TOCTOU on cancel
+  // Why List is the wrong structure for reservations:
+  //   - add/remove/contains are all O(n) — grows with every booking
+  //   - remove() relies on Reservation.equals() — silent no-op if equals() isn't overridden correctly
+  //   - contains() + remove() in cancel() are two separate operations: TOCTOU race possible
+  //     (two threads both pass contains(), both call remove(), both free seats — double-free)
+  //
+  // CopyOnWriteArrayList is used here because per-seat CAS operations don't protect this list:
+  // two threads booking different seats can both reach reservations.add() simultaneously with
+  // no mutual exclusion — plain ArrayList would corrupt under concurrent writes.
+  // COWL makes individual writes safe but doesn't fix the O(n) or TOCTOU problems above.
+  //
+  // IMPROVEMENT — use ConcurrentHashMap<String, Reservation> keyed by confirmationId:
+  //   - O(1) put/remove/get — no scan needed, constant time regardless of booking volume
+  //   - remove(confirmationId) is the single atomic gate for cancel: returns null if absent,
+  //     so the double-free race disappears — only one thread gets a non-null return
+  //   - No equals()/hashCode() dependency on Reservation — the key is a plain String
+  //
+  // Why not CopyOnWriteArraySet<Reservation> (HashSet alternative)?
+  //   - Still O(1) contains/add/remove via hashCode, and thread-safe for iteration
+  //   - But still relies on Reservation.equals()/hashCode() for identity
+  //   - And still has the contains() + remove() TOCTOU problem (two operations, not one)
+  //   - ConcurrentHashMap.remove() solves all of this in a single atomic call
   private List<Reservation> reservations;
 
   // Plain HashMap is correct here: seatMaps is populated once in the constructor and structurally

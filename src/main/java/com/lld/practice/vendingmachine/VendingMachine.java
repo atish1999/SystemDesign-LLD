@@ -2,14 +2,30 @@ package com.lld.practice.vendingmachine;
 
 public class VendingMachine {
   private Inventory inventory;
-  private Transaction transaction;
   private State currentState;
+  private int currentAmount;
 
-  public void insertCoints(int coins) {}
+  public VendingMachine() {}
 
-  public void selectProduct(int aisleNumber) {}
+  public void insertCoints(int coins) {
+    currentState.insert(coins);
+  }
 
-  public void dispense(int aisleNumber) {}
+  public void selectProduct(int aisleNumber) {
+    currentState.select(aisleNumber);
+  }
+
+  public void dispense(int aisleNumber) {
+    currentState.dispense(aisleNumber);
+  }
 
   public void addProduct(Product product) {}
+
+  public int getCurrentAmount() {
+    return this.currentAmount;
+  }
+
+  public void setCurrentAmount(int amount) {
+    this.currentAmount = amount;
+  }
 }

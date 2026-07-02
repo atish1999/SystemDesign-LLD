@@ -11,4 +11,8 @@ public class Inventory {
   public void add(Product product) {}
 
   public void remove(Product product) {}
+
+  public Product getProductAt(int aisleNumber) {
+    return null;
+  }
 }
